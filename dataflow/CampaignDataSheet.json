@@ -1,0 +1,38 @@
+{
+	"name": "CampaignDataSheet",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ExcelCampaignDataSheet",
+						"type": "DatasetReference"
+					},
+					"name": "SrcCampaign"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CsvOutput",
+						"type": "DatasetReference"
+					},
+					"name": "DstCampaignDataSheet"
+				}
+			],
+			"transformations": [
+				{
+					"name": "SplitColumnByDelimiter"
+				},
+				{
+					"name": "FillColumnsBySplitData"
+				},
+				{
+					"name": "RemoveColumn"
+				}
+			],
+			"script": "source(output(\n\t\t{Campaign Name} as string,\n\t\tAccount as string,\n\t\tLOB as string,\n\t\tBU as string,\n\t\t{PARENT CAMPAIGN NAME} as string,\n\t\t{SUB CAMPAIGN NAME} as string,\n\t\t{COUNTRY CODE} as string,\n\t\t{COUNTRY NAME} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> SrcCampaign\nSrcCampaign derive(Account1 = split(Account, \"_\"),\n\tpartitionBy('hash', 1)) ~> SplitColumnByDelimiter\nSplitColumnByDelimiter derive(LOB = Account1[1],\n\t\tBU = Account1[2],\n\t\t{PARENT CAMPAIGN NAME} = Account1[3],\n\t\t{SUB CAMPAIGN NAME} = Account1[4],\n\t\t{COUNTRY CODE} = Account1[5],\n\t\t{COUNTRY NAME} = Account1[6],\n\tpartitionBy('hash', 1)) ~> FillColumnsBySplitData\nFillColumnsBySplitData select(mapColumn(\n\t\t{Campaign Name},\n\t\tAccount,\n\t\tLOB,\n\t\tBU,\n\t\t{PARENT CAMPAIGN NAME},\n\t\t{SUB CAMPAIGN NAME},\n\t\t{COUNTRY CODE},\n\t\t{COUNTRY NAME}\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RemoveColumn\nRemoveColumn sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['Campaign Data Sheet.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> DstCampaignDataSheet"
+		}
+	}
+}

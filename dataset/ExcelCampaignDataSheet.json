@@ -1,0 +1,55 @@
+{
+	"name": "ExcelCampaignDataSheet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "InputDataLink",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Sheet1",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "Campaign Data Sheet.xlsx",
+				"container": "capstonedata3input"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "Campaign Name",
+				"type": "String"
+			},
+			{
+				"name": "Account",
+				"type": "String"
+			},
+			{
+				"name": "LOB",
+				"type": "String"
+			},
+			{
+				"name": "BU",
+				"type": "String"
+			},
+			{
+				"name": "PARENT CAMPAIGN NAME",
+				"type": "String"
+			},
+			{
+				"name": "SUB CAMPAIGN NAME",
+				"type": "String"
+			},
+			{
+				"name": "COUNTRY CODE",
+				"type": "String"
+			},
+			{
+				"name": "COUNTRY NAME",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,45 @@
+{
+	"name": "DataSheet2",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ExcelDataSheet2",
+						"type": "DatasetReference"
+					},
+					"name": "SrcDataSheet2"
+				},
+				{
+					"dataset": {
+						"referenceName": "ExcelParentData",
+						"type": "DatasetReference"
+					},
+					"name": "ParentData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "CsvOutput",
+						"type": "DatasetReference"
+					},
+					"name": "OutputDataSheet2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "DataSheet2LeftParentData"
+				},
+				{
+					"name": "InsertNullwhenNull"
+				},
+				{
+					"name": "RemoveNullColumnsFromDataSheet2"
+				}
+			],
+			"script": "source(output(\n\t\t{Campaign Name} as string,\n\t\tAccount as string,\n\t\tREGION as string,\n\t\t{xCampaign Quarter} as string,\n\t\t{Search Keyword Type} as string,\n\t\t{Search Match Type} as string,\n\t\t{Emea Region} as string,\n\t\t{Emea Sub Region} as string,\n\t\t{xAccount Currency} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> SrcDataSheet2\nsource(output(\n\t\tSOURCE as string,\n\t\t{xMedia Group} as string,\n\t\t{MEDIA TYPE} as string,\n\t\t{xMedia Channel} as string,\n\t\t{Agency Channel Name} as string,\n\t\t{Campaign Name} as string,\n\t\tAccount as string,\n\t\tLOB as string,\n\t\tBU as string,\n\t\t{PARENT CAMPAIGN NAME} as string,\n\t\t{SUB CAMPAIGN NAME} as string,\n\t\t{COUNTRY CODE} as string,\n\t\t{COUNTRY NAME} as string,\n\t\tREGION as string,\n\t\t{xCampaign Quarter} as string,\n\t\t{Search Keyword Type} as string,\n\t\t{Search Match Type} as string,\n\t\t{Emea Region} as string,\n\t\t{Emea Sub Region} as string,\n\t\t{xAccount Currency} as string,\n\t\tCompliant as string,\n\t\t{Agency Owner Market} as string,\n\t\t{Campaign Scale} as string,\n\t\t{Campaign Objective} as string,\n\t\t{Media Brief Name} as string,\n\t\t{Impression } as string,\n\t\tClick as string,\n\t\tView as string,\n\t\t{Swipe rate} as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false,\n\tpartitionBy('hash', 1)) ~> ParentData\nSrcDataSheet2, ParentData join(SrcDataSheet2@{Campaign Name} == ParentData@{Campaign Name},\n\tjoinType:'left',\n\tpartitionBy('hash', 1),\n\tbroadcast: 'auto')~> DataSheet2LeftParentData\nRemoveNullColumnsFromDataSheet2 derive(REGION = iifNull(REGION, \"Null\"),\n\t\t{xCampaign Quarter} = iifNull({xCampaign Quarter}, \"Null\"),\n\t\t{Search Keyword Type} = iifNull({Search Keyword Type}, \"Null\"),\n\t\t{Search Match Type} = iifNull({Search Match Type}, \"Null\"),\n\t\t{Emea Region} = iifNull({Emea Region}, \"Null\"),\n\t\t{Emea Sub Region} = iifNull({Emea Sub Region}, \"Null\"),\n\t\t{xAccount Currency} = iifNull({xAccount Currency}, \"Null\"),\n\tpartitionBy('hash', 1)) ~> InsertNullwhenNull\nDataSheet2LeftParentData select(mapColumn(\n\t\t{Campaign Name} = SrcDataSheet2@{Campaign Name},\n\t\tAccount = SrcDataSheet2@Account,\n\t\tREGION = ParentData@REGION,\n\t\t{xCampaign Quarter} = ParentData@{xCampaign Quarter},\n\t\t{Search Keyword Type} = ParentData@{Search Keyword Type},\n\t\t{Search Match Type} = ParentData@{Search Match Type},\n\t\t{Emea Region} = ParentData@{Emea Region},\n\t\t{Emea Sub Region} = ParentData@{Emea Sub Region},\n\t\t{xAccount Currency} = ParentData@{xAccount Currency}\n\t),\n\tpartitionBy('hash', 1),\n\tskipDuplicateMapInputs: false,\n\tskipDuplicateMapOutputs: false) ~> RemoveNullColumnsFromDataSheet2\nInsertNullwhenNull sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tpartitionFileNames:['DataSheet2.csv'],\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tpartitionBy('hash', 1)) ~> OutputDataSheet2"
+		}
+	}
+}

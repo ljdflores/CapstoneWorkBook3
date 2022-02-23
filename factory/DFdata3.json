@@ -1,0 +1,9 @@
+{
+	"name": "DFdata3",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "867dadcb-8cb9-411e-bf96-a8bd5f3bcba3",
+		"tenantId": "07cc872f-b6e3-487f-834e-25eb4f34ddad"
+	}
+}
